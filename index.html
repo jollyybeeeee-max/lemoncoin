@@ -147,6 +147,7 @@ h1{font-family:var(--display);font-weight:400;font-size:30px;line-height:1;margi
 .wrap>*{min-width:0}
 #app{display:flex;flex-direction:column;gap:16px;min-width:0}
 #app>*{min-width:0;max-width:100%}
+.price.pen{background:color-mix(in srgb,var(--bad) 14%,transparent);color:var(--bad)}
 .skel{height:120px;border-radius:16px;background:var(--surface);border:1px solid var(--line)}
 footer{color:var(--muted);font-size:12px;text-align:center;padding-top:4px}
 </style>
@@ -253,6 +254,8 @@ function earnView(d){
   const list=h('div',{class:'list'});let cat=null;
   for(const r of d.rules){if(r.g!==cat){cat=r.g;list.append(h('div',{class:'cat'},cat))}
     list.append(h('div',{class:'item'},h('div',{style:'min-width:0'},h('div',{style:'font-weight:600'},r.l),r.d?h('div',{class:'meta'},r.d):null),h('span',{class:'price'},'+'+r.c)))}
+  if(d.penalties&&d.penalties.length){list.append(h('div',{class:'cat'},'패널티'));
+    for(const r of d.penalties)list.append(h('div',{class:'item'},h('div',{style:'min-width:0'},h('div',{style:'font-weight:600'},r.l),r.d?h('div',{class:'meta'},r.d):null),h('span',{class:'price pen'},'−'+r.c)))}
   return h('section',{class:'card'},h('div',{class:'card-h'},h('h2',{},'코인 모으는 법')),list)}
 
 function stamp(){const d=S.data;const live=document.getElementById('live'),up=document.getElementById('updated');
