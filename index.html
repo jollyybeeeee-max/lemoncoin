@@ -197,7 +197,7 @@ function load(){const cb='__lc'+(++reqN);const sc=document.createElement('script
 function rankOf(list,key){const s=[...list].sort((a,b)=>b[key]-a[key]||a.n.localeCompare(b.n,'ko'));let prev=null,rk=0;return s.map((m,i)=>{if(m[key]!==prev){rk=i+1;prev=m[key]}return {...m,rk}})}
 
 function tickerView(d){
-  const items=d.feed.slice(0,14).map(f=>f.k==='redeem'?[f.n+'님',` ${f.l} 교환! 축하해요`]:[f.n,` ${f.l} ${sgn(f.c)}`]);
+  const items=d.feed.slice(0,14).map(f=>f.k==='redeem'?[f.n,` ${f.l} 교환! 축하해요`]:[f.n,` ${f.l} ${sgn(f.c)}`]);
   if(!items.length)return null;
   return h('div',{class:'ticker','aria-label':'최근 소식'},h('div',{class:'ticker-track',style:`--dur:${Math.max(28,items.length*4.5)}s`},[...items,...items].map(([b,t])=>h('span',{},h('b',{},b),t))))}
 
@@ -209,7 +209,7 @@ function meView(d){
   const rk=rankOf(d.members,'e').find(x=>x.n===m.n).rk;
   const T=d.rewards.filter(r=>!r.f).sort((a,b)=>a.c-b.c);const can=T.filter(t=>t.c<=m.b);const next=T.find(t=>t.c>m.b);
   card.append(
-    h('div',{class:'mehead'},h('span',{class:'dot'}),h('div',{style:'min-width:0'},h('div',{class:'nm'},m.n+'님'),h('div',{class:'meta'},can.length?`지금 바꿀 수 있어요: ${can.map(t=>t.l).join(', ')}`:'첫 리워드까지 조금만 더!')),
+    h('div',{class:'mehead'},h('span',{class:'dot'}),h('div',{style:'min-width:0'},h('div',{class:'nm'},m.n),h('div',{class:'meta'},can.length?`지금 바꿀 수 있어요: ${can.map(t=>t.l).join(', ')}`:'첫 리워드까지 조금만 더!')),
       h('div',{class:'big'},h('b',{},String(m.b)),h('span',{class:'meta'},'보유 코인'))),
     h('div',{class:'strip'},h('div',{class:'stat'},h('b',{},String(m.e)),h('span',{},'누적 코인')),h('div',{class:'stat'},h('b',{},rk+'위'),h('span',{},`${d.members.length}명 중`)),h('div',{class:'stat'},h('b',{},sgn(m.w)),h('span',{},'이번 주'))));
   if(next)card.append(h('div',{class:'goal'},h('div',{class:'t'},h('span',{},`${next.l}까지`),h('span',{},`${next.c-m.b}코인 남았어요`)),h('div',{class:'bar'},h('i',{style:`width:${Math.max(3,m.b/next.c*100)}%`}))));
@@ -248,7 +248,7 @@ function menuView(d){
     h('div',{class:'rewards'},d.rewards.map(r=>h('div',{class:'rw'+(r.f?' wide':'')+(me&&!r.f&&me.b>=r.c?' can':'')},
       h('div',{class:'l'},r.l),h('span',{class:'price'},r.f?'1코인 = 1,000원':r.c+'코인'),
       r.lim?h('div',{class:'meta'},r.lim):null,r.f?h('div',{class:'meta'},'모은 코인으로 원하는 걸 골라요'):null))),
-    me?h('div',{class:'meta'},`노랗게 표시된 리워드는 ${me.n}님이 지금 바꿀 수 있어요.`):null)}
+    me?h('div',{class:'meta'},`노랗게 표시된 리워드는 ${me.n}이(가) 지금 바꿀 수 있어요.`):null)}
 
 function earnView(d){
   const list=h('div',{class:'list'});let cat=null;
