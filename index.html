@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#FFE04A">
+<title>레몬코인 · 파르나스</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='19' fill='%23E9BD10'/%3E%3Ccircle cx='20' cy='20' r='16' fill='%23FFFBE8'/%3E%3Ccircle cx='20' cy='20' r='14' fill='%23FFE04A'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Gothic+A1:wght@400;600;800&display=swap">
+<style>
+/* Layout: one phone-width column, a poster-like lemon header, then cards stacked by what a teammate wants first: me → podium → list → hall of fame → menu */
+:root{
+  --cream:#FFFBEA; --paper:#FFFFFF; --lemon:#FFE04A; --lemon-deep:#F2C511; --rind:#E9BD10;
+  --leaf:#1F6B3F; --leaf-soft:#E6F4D7; --ink:#24301F; --muted:#6E7462; --line:#EFE7C2;
+  --coral:#FF7A59; --coral-soft:#FFE6DD; --silver:#DADDD3; --bronze:#D49A62;
+  --display:"Jua","Gothic A1",system-ui,sans-serif;
+  --body:"Gothic A1",system-ui,-apple-system,"Apple SD Gothic Neo",sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--cream);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5}
+.wrap{max-width:540px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-bottom:max(40px,env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:18px}
+button{font:inherit;color:inherit}
+button:focus-visible,select:focus-visible{outline:3px solid var(--leaf);outline-offset:2px}
+
+/* header */
+.hero{background:var(--lemon);padding-top:max(20px,env(safe-area-inset-top,0px));padding-bottom:26px;border-radius:0 0 32px 32px;position:relative;overflow:hidden}
+.hero::after{content:"";position:absolute;right:-60px;bottom:-80px;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.55) 0 30%,transparent 31%),repeating-conic-gradient(from 22.5deg,rgba(255,255,255,.35) 0 39deg,transparent 39deg 45deg);opacity:.7}
+.hero .wrap{position:relative;z-index:1;gap:6px}
+.brand{display:flex;align-items:center;gap:12px}
+.brand svg{width:58px;height:58px;flex:none}
+.brand h1{font-family:var(--display);font-weight:400;font-size:42px;line-height:1;margin:0;letter-spacing:.01em}
+.brand p{margin:4px 0 0;font-weight:600;font-size:14px;color:#5B4B00}
+.updated{font-size:12px;color:#6B5A00;display:flex;align-items:center;gap:6px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--leaf);box-shadow:0 0 0 3px rgba(31,107,63,.18)}
+.dot.off{background:var(--coral);box-shadow:0 0 0 3px rgba(255,122,89,.2)}
+
+/* ticker */
+.ticker{margin-top:-14px;background:var(--leaf);color:#fff;border-radius:999px;overflow:hidden;white-space:nowrap;font-weight:600;font-size:14px;position:relative}
+.ticker-track{display:inline-flex;gap:28px;padding:10px 18px;animation:roll var(--dur,40s) linear infinite}
+.ticker-track span{display:inline-flex;gap:6px}
+@keyframes roll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@media (prefers-reduced-motion:reduce){.ticker-track{animation:none;flex-wrap:wrap;white-space:normal}}
+
+/* cards */
+.card{background:var(--paper);border-radius:24px;padding:18px;box-shadow:0 2px 0 var(--line);border:1px solid var(--line)}
+.card h2{font-family:var(--display);font-weight:400;font-size:24px;margin:0 0 12px;display:flex;align-items:center;gap:8px}
+.card h2 small{font-family:var(--body);font-size:12px;color:var(--muted);font-weight:600;margin-left:auto}
+.muted{color:var(--muted);font-size:13px}
+
+/* me */
+.picker{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;margin:0 -4px;padding-left:4px;scrollbar-width:thin}
+.chip{flex:none;border:2px solid var(--line);background:var(--cream);border-radius:999px;padding:6px 14px;font-weight:600;font-size:14px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.me{display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:center;margin-top:14px}
+.bigcoin{width:112px;height:112px;border-radius:50%;background:var(--lemon);border:6px solid var(--rind);display:grid;place-items:center;text-align:center;box-shadow:inset 0 0 0 5px #FFF6C9}
+.bigcoin b{font-family:var(--display);font-weight:400;font-size:44px;line-height:1;display:block}
+.bigcoin span{font-size:11px;font-weight:800;color:#6B5A00}
+.mestats{display:flex;flex-direction:column;gap:6px;min-width:0}
+.mestats .nm{font-family:var(--display);font-size:26px;line-height:1.1}
+.pills{display:flex;flex-wrap:wrap;gap:6px}
+.pill{background:var(--leaf-soft);color:var(--leaf);border-radius:999px;padding:3px 10px;font-size:12px;font-weight:800}
+.pill.y{background:#FFF3B0;color:#6B5A00}
+.goal{margin-top:14px;background:var(--cream);border-radius:16px;padding:12px 14px}
+.goal .t{display:flex;justify-content:space-between;gap:8px;font-weight:600;font-size:14px}
+.bar{height:12px;border-radius:999px;background:#F1E9BE;margin-top:8px;overflow:hidden}
+.bar i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--lemon-deep),var(--lemon))}
+.recent{margin-top:12px;display:flex;flex-direction:column;gap:4px}
+.recent div{display:flex;justify-content:space-between;gap:10px;font-size:13px}
+.recent div span:first-child{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.plus{font-weight:800;color:var(--leaf);white-space:nowrap}
+.minus{font-weight:800;color:var(--coral);white-space:nowrap}
+
+/* podium */
+.seg{display:inline-flex;background:var(--cream);border-radius:999px;padding:4px;gap:4px;border:1px solid var(--line)}
+.seg button{border:0;background:none;padding:6px 14px;border-radius:999px;font-weight:600;font-size:13px;cursor:pointer;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--lemon);color:var(--ink)}
+.podium{display:grid;grid-template-columns:1fr 1fr 1fr;align-items:end;gap:8px;margin-top:16px}
+.pod{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0}
+.pod .who{font-family:var(--display);font-size:20px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pod .crown{font-size:26px;line-height:1}
+.pod .block{width:100%;border-radius:16px 16px 6px 6px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:10px;font-family:var(--display)}
+.pod .block b{font-size:28px;font-weight:400;line-height:1}
+.pod .block span{font-size:13px;opacity:.75}
+.p1 .block{background:var(--lemon);height:130px}
+.p2 .block{background:var(--silver);height:100px}
+.p3 .block{background:var(--bronze);height:80px;color:#3B2200}
+@media (prefers-reduced-motion:no-preference){.pod .block{animation:grow .7s cubic-bezier(.2,.9,.3,1.3) both}.p2 .block{animation-delay:.1s}.p3 .block{animation-delay:.2s}}
+@keyframes grow{from{transform:scaleY(.2);transform-origin:bottom}to{transform:none}}
+
+.list{display:flex;flex-direction:column;margin-top:14px}
+.row{display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:10px;align-items:center;padding:9px 6px;border-top:1px dashed var(--line);border-radius:10px}
+.row:first-child{border-top:0}
+.row.me-row{background:#FFF6C9;border-top-color:transparent}
+.row .rk{font-family:var(--display);color:var(--muted);text-align:center;font-size:17px}
+.row .nm{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row .mini{height:6px;border-radius:999px;background:#F4EED1;margin-top:4px;overflow:hidden}
+.row .mini i{display:block;height:100%;background:var(--lemon-deep)}
+.row .val{font-family:var(--display);font-size:20px}
+.more{margin-top:8px;border:0;background:none;color:var(--leaf);font-weight:800;cursor:pointer;padding:6px 0}
+
+/* hall of fame */
+.weeks{display:flex;flex-direction:column;gap:10px}
+.wk{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:center;background:var(--cream);border-radius:18px;padding:12px 14px}
+.wk.now{background:#FFF3B0}
+.trophy{width:48px;height:48px;border-radius:14px;background:var(--paper);display:grid;place-items:center;font-size:26px;border:1px solid var(--line)}
+.wk .t{font-weight:800;font-size:13px;color:var(--muted);display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.wk .champ{font-family:var(--display);font-size:22px;line-height:1.2}
+.wk .others{font-size:13px;color:var(--muted)}
+.live{background:var(--coral);color:#fff;border-radius:999px;padding:1px 8px;font-size:11px}
+
+/* menu */
+.rewards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.rw{background:var(--cream);border-radius:18px;padding:14px;display:flex;flex-direction:column;gap:4px;border:2px solid transparent}
+.rw.can{border-color:var(--leaf);background:var(--leaf-soft)}
+.rw .ic{font-size:28px;line-height:1}
+.rw .l{font-weight:800}
+.rw .c{font-family:var(--display);font-size:22px}
+.rw .lim{font-size:12px;color:var(--muted)}
+.rw.wide{grid-column:1/-1}
+.cat{font-weight:800;font-size:12px;color:var(--muted);letter-spacing:.06em;margin:14px 0 6px}
+.cat:first-of-type{margin-top:0}
+.earn{display:flex;flex-direction:column;gap:8px}
+.er{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;background:var(--cream);border-radius:14px;padding:10px 12px}
+.er .l{font-weight:800}
+.er .d{font-size:12px;color:var(--muted)}
+.er .c{font-family:var(--display);font-size:20px;color:var(--leaf);background:var(--paper);border-radius:999px;padding:2px 12px;white-space:nowrap}
+
+.note{background:var(--coral-soft);color:#8A2E16;border-radius:16px;padding:12px 14px;font-size:14px;font-weight:600}
+.skeleton{height:120px;border-radius:24px;background:linear-gradient(90deg,#FFF6D6,#FFFDF3,#FFF6D6);background-size:200% 100%;animation:sh 1.2s infinite}
+@keyframes sh{to{background-position:-200% 0}}
+footer{text-align:center;color:var(--muted);font-size:13px;padding-top:6px}
+footer b{font-family:var(--display);font-weight:400;font-size:18px;color:var(--ink);display:block}
+</style>
+</head>
+<body>
+<header class="hero">
+  <div class="wrap">
+    <div class="brand">
+      <svg viewBox="0 0 44 44" aria-hidden="true"><g transform="translate(1 3)"><circle cx="20" cy="20" r="19" fill="#E9BD10"/><circle cx="20" cy="20" r="16.4" fill="#FFFBE8"/><circle cx="20" cy="20" r="14.6" fill="#FFE04A"/><path d="M33.4 25.55L6.6 14.45M25.55 33.4L14.45 6.6M14.45 33.4L25.55 6.6M6.6 25.55L33.4 14.45" stroke="#FFFBE8" stroke-width="1.5" stroke-linecap="round"/><circle cx="20" cy="20" r="2.6" fill="#FFFBE8"/></g><path d="M31 7.5C33 2.5 38.5 1 42.5 2.2 41.3 6.4 37 9.6 31 7.5z" fill="#1F6B3F"/></svg>
+      <div>
+        <h1>레몬코인</h1>
+        <p>파르나스 팀 실시간 현황 🍋</p>
+      </div>
+    </div>
+    <div class="updated"><span class="dot" id="dot"></span><span id="updated">불러오는 중…</span></div>
+  </div>
+</header>
+
+<main class="wrap" id="app">
+  <div class="skeleton"></div>
+  <div class="skeleton"></div>
+</main>
+
+<script>
+const SHEET_ID='1cy61oMImMDPdjr0wOP0iMHJWYGn5Za26s620THmcSx8';
+const S={data:null,me:null,by:'e',showAll:false,loadErr:false};
+try{S.me=localStorage.getItem('lemoncoin.me')}catch(e){}
+try{S.by=localStorage.getItem('lemoncoin.by')||'e'}catch(e){}
+
+const ICON={'간식':'🍪','음료수':'🧃','숏브레이크':'☕','밀즈':'🍱','원하는':'🎁'};
+const iconFor=l=>{for(const k in ICON)if(l.startsWith(k))return ICON[k];return '🍋'};
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function h(tag,attrs,...kids){const el=document.createElement(tag);
+  for(const k in attrs||{}){const v=attrs[k];if(v==null||v===false)continue;if(k.startsWith('on'))el.addEventListener(k.slice(2),v);else if(k==='text')el.textContent=v;else el.setAttribute(k,v===true?'':v)}
+  for(const c of kids.flat()){if(c==null||c===false)continue;el.append(c instanceof Node?c:document.createTextNode(c))}return el}
+const ago=iso=>{const s=(Date.now()-new Date(iso))/1000;if(s<90)return '방금';if(s<3600)return Math.round(s/60)+'분 전';if(s<86400)return Math.round(s/3600)+'시간 전';return Math.round(s/86400)+'일 전'};
+const md=d=>{const [,m,dd]=d.split('-').map(Number);return `${m}/${dd}`};
+
+/* ---------- data (Google Sheet → JSONP, no login needed) ---------- */
+let reqN=0;
+function load(){
+  const cb='__lc'+(++reqN);const sc=document.createElement('script');let done=false;
+  const fail=()=>{if(done)return;done=true;cleanup();S.loadErr=true;render()};
+  const cleanup=()=>{delete window[cb];sc.remove()};
+  window[cb]=resp=>{done=true;cleanup();
+    let same=false;try{const v=resp.table.rows[0].c[0].v;const d=JSON.parse(v);if(!d||!d.members)throw 0;same=!!(S.data&&S.data.u===d.u&&!S.loadErr);S.data=d;S.loadErr=false}catch(e){S.loadErr=true}
+    same?stamp():render()};
+  sc.src=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json;responseHandler:${cb}&sheet=public&range=A1&headers=0&t=${Date.now()}`;
+  sc.onerror=fail;setTimeout(fail,15000);document.head.append(sc)}
+
+/* ---------- views ---------- */
+function rankOf(list,key){const s=[...list].sort((a,b)=>b[key]-a[key]||a.n.localeCompare(b.n,'ko'));let prev=null,rk=0;return s.map((m,i)=>{if(m[key]!==prev){rk=i+1;prev=m[key]}return {...m,rk}})}
+
+function tickerView(d){
+  const items=d.feed.slice(0,14).map(f=>f.k==='redeem'?`🎉 ${f.n}님 ${f.l} 교환!`:`✨ ${f.n} ${f.l} +${f.c}`);
+  if(!items.length)return null;
+  const track=h('div',{class:'ticker-track',style:`--dur:${Math.max(24,items.length*4)}s`},[...items,...items].map(t=>h('span',{},t)));
+  return h('div',{class:'ticker','aria-label':'최근 소식'},track)}
+
+function meView(d){
+  const names=[...d.members].map(m=>m.n).sort((a,b)=>a.localeCompare(b,'ko'));
+  const card=h('section',{class:'card'},h('h2',{},'🙋 내 코인',h('small',{},S.me?'이름을 바꾸려면 다시 눌러요':'내 이름을 눌러 주세요')));
+  card.append(h('div',{class:'picker',role:'group','aria-label':'이름 선택'},names.map(n=>h('button',{class:'chip','aria-pressed':String(S.me===n),onclick:()=>{S.me=S.me===n?null:n;try{S.me?localStorage.setItem('lemoncoin.me',n):localStorage.removeItem('lemoncoin.me')}catch(e){}render()}},n))));
+  const m=d.members.find(x=>x.n===S.me);
+  if(!m)return card;
+  const rk=rankOf(d.members,'e').find(x=>x.n===m.n).rk;
+  const tiers=d.rewards.filter(r=>!r.f).sort((a,b)=>a.c-b.c);
+  const can=tiers.filter(t=>t.c<=m.b);const next=tiers.find(t=>t.c>m.b);
+  card.append(h('div',{class:'me'},
+    h('div',{class:'bigcoin'},h('div',{},h('b',{},String(m.b)),h('span',{},'보유 코인'))),
+    h('div',{class:'mestats'},h('div',{class:'nm'},m.n+'님'),
+      h('div',{class:'pills'},h('span',{class:'pill y'},`누적 ${m.e} · ${rk}위`),h('span',{class:'pill'},`이번 주 ${m.w>=0?'+':''}${m.w}`)),
+      can.length?h('div',{class:'muted'},`지금 바꿀 수 있어요: ${can.map(t=>iconFor(t.l)+' '+t.l).join(', ')}`):h('div',{class:'muted'},'첫 리워드까지 화이팅! 💪'))));
+  if(next){const prevC=can.length?can[can.length-1].c:0;const pct=Math.max(4,Math.min(100,(m.b-0)/next.c*100));
+    card.append(h('div',{class:'goal'},h('div',{class:'t'},h('span',{},`${iconFor(next.l)} ${next.l}까지`),h('span',{},`${next.c-m.b}코인 남았어요`)),h('div',{class:'bar'},h('i',{style:`width:${pct}%`}))))}
+  else if(tiers.length)card.append(h('div',{class:'goal'},h('div',{class:'t'},h('span',{},'🎉 모든 리워드를 바꿀 수 있어요!'),h('span',{},'리더에게 말해 주세요'))));
+  const mine=d.feed.filter(f=>f.n===m.n).slice(0,5);
+  if(mine.length)card.append(h('div',{class:'recent'},h('div',{class:'muted',style:'font-weight:800'},'최근 내역'),mine.map(f=>h('div',{},h('span',{},`${md(f.d)} ${f.k==='redeem'?f.l+' 교환':f.l}`),h('span',{class:f.c>=0?'plus':'minus'},(f.c>0?'+':'')+f.c)))));
+  return card}
+
+function rankView(d){
+  const key=S.by==='w'?'w':'e';const r=rankOf(d.members,key);const top=r.filter(x=>x[key]>0).slice(0,3);
+  const card=h('section',{class:'card'},h('h2',{},'🏆 순위',h('small',{},h('span',{class:'seg',role:'group','aria-label':'순위 기준'},[['e','누적'],['w','이번 주']].map(([k,l])=>h('button',{'aria-pressed':String(key===k),onclick:()=>{S.by=k;try{localStorage.setItem('lemoncoin.by',k)}catch(e){}render()}},l))))));
+  if(top.length){const order=[top[1],top[0],top[2]];
+    card.append(h('div',{class:'podium'},order.map((x,i)=>{if(!x)return h('div');const cls=['p2','p1','p3'][i];
+      return h('div',{class:'pod '+cls},h('div',{class:'crown'},['👑','🥈','🥉'][Math.min(x.rk,3)-1]),h('div',{class:'who'},x.n),h('div',{class:'block'},h('b',{},(key==='w'&&x[key]>0?'+':'')+x[key]),h('span',{},'코인')))})))}
+  else card.append(h('div',{class:'muted'},key==='w'?'이번 주 첫 코인의 주인공은 누구?':'아직 코인을 받은 사람이 없어요.'));
+  const rest=S.showAll?r:r.slice(0,10);const max=Math.max(1,...r.map(x=>x[key]));
+  card.append(h('div',{class:'list'},rest.map(x=>h('div',{class:'row'+(x.n===S.me?' me-row':'')},h('span',{class:'rk'},String(x.rk)),
+    h('div',{style:'min-width:0'},h('div',{class:'nm'},x.n+(x.n===S.me?' (나)':'')),h('div',{class:'mini'},h('i',{style:`width:${Math.max(0,x[key])/max*100}%`}))),
+    h('span',{class:'val'},(key==='w'&&x[key]>0?'+':'')+x[key])))));
+  if(r.length>10)card.append(h('button',{class:'more',onclick:()=>{S.showAll=!S.showAll;render()}},S.showAll?'접기':`전체 ${r.length}명 보기`));
+  return card}
+
+function fameView(d){
+  if(!d.weeks.length)return null;
+  const today=new Date();const mon=new Date(today);mon.setDate(today.getDate()-(today.getDay()+6)%7);
+  const curKey=`${mon.getFullYear()}-${String(mon.getMonth()+1).padStart(2,'0')}-${String(mon.getDate()).padStart(2,'0')}`;
+  return h('section',{class:'card'},h('h2',{},'🌟 명예의 전당',h('small',{},'주간 1등')),
+    h('div',{class:'weeks'},d.weeks.slice(0,6).map(w=>{const [c,...o]=w.s;const now=w.w===curKey;
+      return h('div',{class:'wk'+(now?' now':'')},h('div',{class:'trophy'},now?'🔥':'🏅'),
+        h('div',{style:'min-width:0'},h('div',{class:'t'},`${w.t} · ${w.r}`,now?h('span',{class:'live'},'진행 중'):null),
+          c?h('div',{class:'champ'},`${c[0]} +${c[1]}`):h('div',{class:'champ'},'-'),
+          o.length?h('div',{class:'others'},o.slice(0,2).map((x,i)=>`${['🥈','🥉'][i]} ${x[0]} +${x[1]}`).join('   ')):null))})))}
+
+function menuView(d){
+  const me=d.members.find(x=>x.n===S.me);
+  const card=h('section',{class:'card'},h('h2',{},'🎁 리워드 메뉴',h('small',{},'교환은 리더에게!')));
+  card.append(h('div',{class:'rewards'},d.rewards.map(r=>h('div',{class:'rw'+(r.f?' wide':'')+(me&&!r.f&&me.b>=r.c?' can':'')},
+    h('div',{class:'ic'},iconFor(r.l)),h('div',{class:'l'},r.l),h('div',{class:'c'},r.f?'1코인 = 1,000원':r.c+'코인'),
+    r.lim?h('div',{class:'lim'},r.lim):null,r.f?h('div',{class:'lim'},'모은 코인으로 원하는 걸 골라요'):null))));
+  return card}
+
+function earnView(d){
+  const card=h('section',{class:'card'},h('h2',{},'🍋 코인 모으는 법'));
+  let cat=null;const box=h('div',{class:'earn'});
+  for(const r of d.rules){if(r.g!==cat){cat=r.g;box.append(h('div',{class:'cat'},cat))}
+    box.append(h('div',{class:'er'},h('div',{style:'min-width:0'},h('div',{class:'l'},r.l),r.d?h('div',{class:'d'},r.d):null),h('span',{class:'c'},'+'+r.c)))}
+  card.append(box);return card}
+
+function stamp(){const d=S.data;if(!d)return;document.getElementById('dot').classList.toggle('off',S.loadErr);document.getElementById('updated').textContent=(d.u?ago(d.u)+' 업데이트':'업데이트 시간 없음')+(S.loadErr?' · 새 정보 확인 실패':'')}
+function render(){
+  const app=document.getElementById('app');const dot=document.getElementById('dot');const up=document.getElementById('updated');
+  const d=S.data;
+  if(!d){if(S.loadErr){app.replaceChildren(h('div',{class:'note'},'레몬코인 현황을 불러오지 못했어요. 잠시 후 새로고침해 주세요 🙏'));dot.classList.add('off');up.textContent='연결 안 됨'}return}
+  stamp();
+  app.replaceChildren(...[tickerView(d),meView(d),rankView(d),fameView(d),menuView(d),earnView(d),
+    h('footer',{},h('b',{},'모으고, 바꾸고, 함께 성장하기'),'매니저룸 컴퓨터에서도 볼 수 있어요 · 1분마다 자동 새로고침')].filter(Boolean))}
+
+load();setInterval(()=>{if(!document.hidden)load()},60000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)load()});
+setInterval(stamp,30000);
+</script>
+</body>
+</html>
