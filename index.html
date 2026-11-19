@@ -53,7 +53,6 @@ h1{font-family:var(--display);font-weight:400;font-size:30px;line-height:1;margi
 .ticker-track b{font-weight:700}
 .ticker-track span::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--on-lemon);opacity:.35;margin-right:4px}
 @keyframes roll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
-@media (prefers-reduced-motion:reduce){.ticker-track{animation:none;flex-wrap:wrap;white-space:normal;row-gap:4px}}
 
 /* cards */
 .card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:12px}
@@ -204,7 +203,7 @@ function rankOf(list,key){const s=[...list].sort((a,b)=>b[key]-a[key]||a.n.local
 function tickerView(d){
   const items=d.feed.slice(0,14).map(f=>f.k==='redeem'?[f.n,` ${f.l} 교환! 축하해요`]:[f.n,` ${f.l} ${sgn(f.c)}`]);
   if(!items.length)return null;
-  return h('div',{class:'ticker','aria-label':'최근 소식'},h('div',{class:'ticker-track',style:`--dur:${Math.max(28,items.length*4.5)}s`},[...items,...items].map(([b,t])=>h('span',{},h('b',{},b),t))))}
+  return h('div',{class:'ticker','aria-label':'최근 소식'},h('div',{class:'ticker-track',style:`--dur:${Math.max(28,items.length*4.5)}s`},[...items,...items].map(([b,t],i)=>h('span',{'aria-hidden':i>=items.length?'true':null},h('b',{},b),t))))}
 
 function meView(d){
   const names=[...d.members].map(m=>m.n).sort((a,b)=>a.localeCompare(b,'ko'));
