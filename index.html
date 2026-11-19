@@ -246,7 +246,7 @@ function menuView(d){
   const me=d.members.find(x=>x.n===S.me);
   return h('section',{class:'card'},h('div',{class:'card-h'},h('h2',{},'리워드 메뉴'),h('span',{class:'meta'},'교환은 리더에게')),
     h('div',{class:'rewards'},d.rewards.map(r=>h('div',{class:'rw'+(r.f?' wide':'')+(me&&!r.f&&me.b>=r.c?' can':'')},
-      h('div',{class:'l'},r.l),h('span',{class:'price'},r.f?'1코인 = 1,000원':r.c+'코인'),
+      h('div',{class:'l'},r.l),r.d?h('div',{class:'meta'},r.d):null,h('span',{class:'price'},r.f?'1코인 = 1,000원':r.c+'코인'),
       r.lim?h('div',{class:'meta'},r.lim):null,r.f?h('div',{class:'meta'},'모은 코인으로 원하는 걸 골라요'):null))),
     me?h('div',{class:'meta'},'노랗게 표시된 리워드는 지금 바로 바꿀 수 있어요.'):null)}
 
