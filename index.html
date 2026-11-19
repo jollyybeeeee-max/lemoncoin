@@ -12,7 +12,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Do+Hyeon&family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap">
 <style>
-/* 레몬코인 보드의 디자인 시스템 + 한 페이지 구성: 내 코인 → 순위(시상대) → 명예의 전당 → 리워드 메뉴 → 모으는 법 */
+/* 레몬코인 보드의 디자인 시스템 + 한 페이지 구성: 내 코인 → 순위(시상대) → 리워드 메뉴 (명예의 전당은 헤더 버튼) → 모으는 법 */
 :root{
   --bg:#F5F6EF; --surface:#FFFFFF; --ink:#1B1E17; --muted:#666B5E; --line:#E1E3D7;
   --lemon:#F3D433; --lemon-soft:#FBF0B4; --on-lemon:#2B2400; --good:#2E7A4C; --bad:#B0432E;
@@ -149,6 +149,10 @@ h1{font-family:var(--display);font-weight:400;font-size:30px;line-height:1;margi
 #app>*{min-width:0;max-width:100%}
 .price.pen{background:color-mix(in srgb,var(--bad) 14%,transparent);color:var(--bad)}
 .skel{height:120px;border-radius:16px;background:var(--surface);border:1px solid var(--line)}
+header>.fame-btn{margin-left:auto;align-self:flex-start;flex:none;display:flex;flex-direction:column;align-items:center;gap:2px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:11px;font-weight:600;padding:6px 10px;border-radius:12px;cursor:pointer}
+.fame-btn svg{width:22px;height:22px}
+.fame-btn[aria-pressed="true"]{background:var(--lemon);border-color:var(--lemon);color:var(--on-lemon)}
+.fame-btn[aria-pressed="true"] path{fill:var(--on-lemon)}
 footer{color:var(--muted);font-size:12px;text-align:center;padding-top:4px}
 </style>
 </head>
@@ -160,6 +164,7 @@ footer{color:var(--muted);font-size:12px;text-align:center;padding-top:4px}
       <div class="ttl"><h1>레몬코인</h1><span class="store">파르나스 스토어</span></div>
       <p class="sub">모으고, 바꾸고, 함께 성장하기</p>
     </div>
+    <button id="fameBtn" class="fame-btn" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10v2h3v3a4 4 0 0 1-4 4h-.3A5 5 0 0 1 13 14.8V17h3v4H8v-4h3v-2.2A5 5 0 0 1 8.3 12H8a4 4 0 0 1-4-4V5h3V3zm0 4H6v1a2 2 0 0 0 1 1.7V7zm10 0v2.7A2 2 0 0 0 18 8V7h-1z" fill="var(--rind)"/></svg>명예의 전당</button>
   </header>
   <div class="updated"><span class="live" id="live"></span><span id="updated">불러오는 중…</span></div>
   <main id="app"><div class="skel"></div><div class="skel"></div></main>
@@ -168,7 +173,7 @@ footer{color:var(--muted);font-size:12px;text-align:center;padding-top:4px}
 
 <script>
 const SHEET_ID='1cy61oMImMDPdjr0wOP0iMHJWYGn5Za26s620THmcSx8';
-const S={data:null,err:false,me:null,by:'e',showAll:false};
+const S={data:null,err:false,me:null,by:'e',showAll:false,fame:false};
 try{S.me=localStorage.getItem('lemoncoin.me')}catch(e){}
 try{const b=localStorage.getItem('lemoncoin.by');if(b==='e'||b==='w')S.by=b}catch(e){}
 
@@ -235,8 +240,8 @@ function rankView(d){
 
 function fameView(d){
   if(!d.weeks.length)return null;const cur=curMonday();
-  return h('section',{class:'card'},h('div',{class:'card-h'},h('h2',{},'명예의 전당'),h('span',{class:'meta'},'주간 1등')),
-    h('div',{class:'weeks'},d.weeks.slice(0,6).map(w=>{const [c,...o]=w.s;const now=w.w===cur;const medal=h('span',{class:'medal'});medal.innerHTML=TROPHY;
+  return h('section',{class:'card'},h('div',{class:'card-h'},h('h2',{},'명예의 전당'),h('span',{class:'meta'},'주간 1등'),h('button',{class:'more',style:'margin-left:auto',onclick:()=>setFame(false)},'← 돌아가기')),
+    h('div',{class:'weeks'},d.weeks.map(w=>{const [c,...o]=w.s;const now=w.w===cur;const medal=h('span',{class:'medal'});medal.innerHTML=TROPHY;
       return h('div',{class:'wk'+(now?' now':'')},medal,
         h('div',{style:'min-width:0'},h('div',{class:'t'},`${w.t} · ${w.r}`,now?h('span',{class:'livetag'},'진행 중'):null),
           h('div',{class:'champ'},c?c[0]:'-'),o.length?h('div',{class:'others'},o.slice(0,2).map((x,i)=>`${i+2}위 ${x[0]} ${sgn(x[1])}`).join(' · ')):null),
@@ -264,7 +269,10 @@ function stamp(){const d=S.data;const live=document.getElementById('live'),up=do
 
 function render(){stamp();const app=document.getElementById('app');const d=S.data;
   if(!d){if(S.err)app.replaceChildren(h('div',{class:'note warn'},'레몬코인 현황을 불러오지 못했어요. 잠시 후 새로고침해 주세요.'));return}
-  app.replaceChildren(...[tickerView(d),meView(d),rankView(d),fameView(d),menuView(d),earnView(d)].filter(Boolean))}
+  if(S.fame){app.replaceChildren(fameView(d)||h('div',{class:'note'},'아직 기록된 주가 없어요.'));return}
+  app.replaceChildren(...[tickerView(d),meView(d),rankView(d),menuView(d),earnView(d)].filter(Boolean))}
+function setFame(on){S.fame=on;document.getElementById('fameBtn').setAttribute('aria-pressed',on);render();window.scrollTo(0,0)}
+document.getElementById('fameBtn').addEventListener('click',()=>setFame(!S.fame));
 
 load();
 setInterval(()=>{if(!document.hidden)load()},60000);
