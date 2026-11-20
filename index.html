@@ -201,6 +201,7 @@ header>.fame-btn{margin-left:auto;align-self:flex-start;flex:none;display:flex;f
 .snacks .t .price{margin-left:auto}
 .snacks .list{display:flex;flex-wrap:wrap;gap:6px}
 .snacks .list span{background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px 11px;font-size:13px}
+.tdate{font-family:var(--mono);font-size:.82em;font-weight:600;opacity:.6;margin-right:6px}
 footer{color:var(--muted);font-size:12px;text-align:center;padding-top:4px}
 </style>
 </head>
@@ -250,9 +251,10 @@ function load(){const cb='__lc'+(++reqN);const sc=document.createElement('script
 function rankOf(list,key){const s=[...list].sort((a,b)=>b[key]-a[key]||a.n.localeCompare(b.n,'ko'));let prev=null,rk=0;return s.map((m,i)=>{if(m[key]!==prev){rk=i+1;prev=m[key]}return {...m,rk}})}
 
 function tickerView(d){
-  const items=d.feed.slice(0,14).map(f=>f.k==='redeem'?[f.n,` ${f.l} 교환! 축하해요`]:[f.n,` ${f.l} ${sgn(f.c)}`]);
+  const md=x=>{const p=(x||'').split('-');return p.length===3?`${+p[1]}/${+p[2]}`:''};
+  const items=d.feed.slice(0,14).map(f=>[md(f.d),f.n,f.k==='redeem'?` ${f.l} 교환! 축하해요`:` ${f.l} ${sgn(f.c)}`]);
   if(!items.length)return null;
-  return h('div',{class:'ticker','aria-label':'최근 소식'},h('div',{class:'ticker-track',style:`--dur:${Math.max(28,items.length*4.5)}s`},[...items,...items].map(([b,t],i)=>h('span',{'aria-hidden':i>=items.length?'true':null},h('b',{},b),t))))}
+  return h('div',{class:'ticker','aria-label':'최근 소식'},h('div',{class:'ticker-track',style:`--dur:${Math.max(28,items.length*4.5)}s`},[...items,...items].map(([dt,b,t],i)=>h('span',{'aria-hidden':i>=items.length?'true':null},dt?h('small',{class:'tdate'},dt):null,h('b',{},b),t))))}
 
 
 /* ---------- 출석 도장 · 오늘의 퀴즈 (Apps Script) ---------- */
