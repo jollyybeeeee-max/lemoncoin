@@ -40,7 +40,7 @@ function doGet(e) {
     if ((a === 'stamp' || a === 'answer') && !valid) return out_({ ok: false, err: 'name' });
     if (a === 'stamp') { lock.waitLock(10000); stamp_(name, false); }
     let res = null;
-    if (a === 'answer') { lock.waitLock(10000); res = answer_(name, Number(p.c)); }
+    if (a === 'answer') { lock.waitLock(10000); res = answer_(name, Number(p.qi || 0), Number(p.choice)); } // 'c'는 구글 예약어라 choice 사용
     return out_(Object.assign({ ok: true }, state_(valid ? name : null), res ? { result: res } : {}));
   } catch (err) {
     return out_({ ok: false, err: String(err) });
@@ -67,7 +67,9 @@ function state_(name) {
   return { today: ymd_(), monday: mon, stamps: stamps, quiz: quizState_(name) };
 }
 
-/* ---------- 오늘의 퀴즈 ---------- */
+/* ---------- 오늘의 퀴즈 (랜덤한 날 · 2문제) ---------- */
+const QUIZ_PER_DAY = 2;      // 한 번에 푸는 문제 수
+const QUIZ_DAYS_PER_WEEK = 3; // 일주일에 퀴즈가 열리는 날 수(평균)
 function bank_() {
   const s = tab_('quiz', ['문제', '보기1', '보기2', '보기3', '보기4', '정답(1~4)', '해설']);
   return rows_(s, 7).map((r, i) => ({
@@ -76,39 +78,54 @@ function bank_() {
     ans: Number(r[5]), ex: String(r[6] || '').trim()
   })).filter(x => x.q && x.opts.length >= 2 && x.ans >= 1 && x.ans <= x.opts.length);
 }
+function rnd_(n) { let x = (n * 2654435761) % 4294967296; x = (x ^ (x >>> 15)) * 2246822519 % 4294967296; return (x ^ (x >>> 13)) >>> 0; }
+function isQuizDay_(d) { return rnd_(d + 7919) % 7 < QUIZ_DAYS_PER_WEEK; }
 function todayQuiz_() {
-  const b = bank_();
-  if (!b.length) return null;
-  // 고정된 순서로 섞은 뒤 하루에 하나씩 → 문제를 다 돌기 전까지 겹치지 않아요
+  const b = bank_(), d = dayNum_();
+  if (!b.length || !isQuizDay_(d)) return null;
   const order = b.map((x, i) => i);
   let seed = 20261120;
   for (let i = order.length - 1; i > 0; i--) {
     seed = (seed * 1103515245 + 12345) % 2147483648;
     const j = seed % (i + 1); const t = order[i]; order[i] = order[j]; order[j] = t;
   }
-  return b[order[dayNum_() % b.length]];
+  let k = 0; for (let x = 19000; x < d; x++) if (isQuizDay_(x)) k++; // 지금까지 열린 퀴즈 날 수
+  const n = Math.min(QUIZ_PER_DAY, b.length), out = [];
+  for (let i = 0; i < n; i++) out.push(b[order[(k * QUIZ_PER_DAY + i) % b.length]]);
+  return out;
 }
 function answerTab_() { return tab_('answers', ['날짜', '이름', '문제 행', '고른 답', '정답 여부', '시각']); }
 function quizState_(name) {
-  const q = todayQuiz_();
-  if (!q) return null;
-  const t = ymd_();
-  const today = rows_(answerTab_(), 5).filter(r => Number(r[0]) === t && Number(r[2]) === q.row);
-  const mine = name ? today.filter(r => r[1] === name)[0] : null;
-  const st = { n: today.length, ok: today.filter(r => r[4]).length };
-  const base = { id: t + '-' + q.row, q: q.q, opts: q.opts, stats: st };
-  if (mine) Object.assign(base, { done: { c: Number(mine[3]), ok: !!mine[4], ans: q.ans, ex: q.ex } });
-  return base;
+  const qs = todayQuiz_();
+  if (!qs) return null;
+  const t = ymd_(), rowsSet = qs.map(q => q.row);
+  const today = rows_(answerTab_(), 5).filter(r => Number(r[0]) === t && rowsSet.indexOf(Number(r[2])) >= 0);
+  const people = {};
+  today.forEach(r => { const p = people[r[1]] || (people[r[1]] = { n: 0, ok: 0 }); p.n++; if (r[4]) p.ok++; });
+  const fin = Object.keys(people).filter(k => people[k].n >= qs.length);
+  const stats = { n: fin.length, perfect: fin.filter(k => people[k].ok >= qs.length).length };
+  return {
+    id: t + '-' + rowsSet.join('-'), stats: stats,
+    qs: qs.map(q => {
+      const mine = name ? today.filter(r => r[1] === name && Number(r[2]) === q.row)[0] : null;
+      const o = { q: q.q, opts: q.opts };
+      if (mine) o.done = { c: Number(mine[3]), ok: !!mine[4], ans: q.ans, ex: q.ex };
+      return o;
+    })
+  };
 }
-function answer_(name, c) {
-  const q = todayQuiz_();
-  if (!q) return { err: 'noquiz' };
-  const t = ymd_(), s = answerTab_();
-  const prev = rows_(s, 5).filter(r => Number(r[0]) === t && Number(r[2]) === q.row && r[1] === name)[0];
-  if (prev) return { already: true };
+function answer_(name, qi, c) {
+  const qs = todayQuiz_();
+  if (!qs || !qs[qi]) return { err: 'noquiz' };
+  const q = qs[qi], t = ymd_(), s = answerTab_();
+  const mineRows = rows_(s, 5).filter(r => Number(r[0]) === t && r[1] === name);
+  if (mineRows.some(r => Number(r[2]) === q.row)) return { already: true };
   if (!(c >= 1 && c <= q.opts.length)) return { err: 'choice' };
   const ok = c === q.ans;
   s.appendRow([t, name, q.row, c, ok ? 1 : 0, new Date()]);
-  stamp_(name, ok); // 퀴즈를 풀면 출석 도장, 맞히면 골드 도장
+  const rowsSet = qs.map(x => x.row);
+  const mine = mineRows.filter(r => rowsSet.indexOf(Number(r[2])) >= 0).concat([[t, name, q.row, c, ok ? 1 : 0]]);
+  const allDone = mine.length >= qs.length, allOk = allDone && mine.every(r => r[4]);
+  stamp_(name, allOk); // 퀴즈를 풀면 출석 도장, 모두 맞히면 골드 도장
   return { ok: ok };
 }

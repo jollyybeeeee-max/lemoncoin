@@ -202,6 +202,7 @@ header>.fame-btn{margin-left:auto;align-self:flex-start;flex:none;display:flex;f
 .snacks .list{display:flex;flex-wrap:wrap;gap:6px}
 .snacks .list span{background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px 11px;font-size:13px}
 .tdate{font-family:var(--mono);font-size:.82em;font-weight:600;opacity:.6;margin-right:6px}
+.qnext{border:0;background:var(--ink);color:var(--bg);font-weight:600;font-size:15px;padding:13px;border-radius:12px;cursor:pointer}
 footer{color:var(--muted);font-size:12px;text-align:center;padding-top:4px}
 </style>
 </head>
@@ -262,7 +263,7 @@ const API='https://script.google.com/macros/s/AKfycbx4fwPV2YrbsykVepAAkzwVsjzJHn
 const DOWS=['월','화','수','목','금','토','일'];
 const Q={st:{},busy:false,open:false,pick:null,err:''};
 function api(params){const u=new URL(API);for(const k in params)if(params[k]!=null)u.searchParams.set(k,params[k]);
-  return fetch(u).then(r=>r.text()).then(t=>{let j;try{j=JSON.parse(t)}catch(_){throw new Error('응답 형식 오류: '+t.replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim().slice(0,50))}if(!j.ok)throw new Error(j.err||'fail');return j})}
+  return fetch(u).then(r=>r.text()).then(t=>{let j;try{j=JSON.parse(t)}catch(_){throw new Error('응답 형식 오류: '+t.replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim().slice(0,50))}if(!j.ok)throw new Error(j.err||'fail');if(j.quiz&&!j.quiz.qs){const o=j.quiz;j.quiz={id:o.id,stats:{n:0,perfect:0},qs:[{q:o.q,opts:o.opts,done:o.done}]}}return j})}
 function refreshState(){if(!API)return;const who=S.me||'';
   api({a:'state',name:who}).then(j=>{Q.st[who]=j;Q.err='';render();renderSheet()}).catch(()=>{Q.err='net';render()})}
 const curState=()=>Q.st[S.me||'']||null;
@@ -284,35 +285,44 @@ function attView(){
 function doStamp(){if(Q.busy||!S.me)return;Q.busy=true;render();const who=S.me;
   api({a:'stamp',name:who}).then(j=>{Q.st[who]=j;Q.busy=false;const c=j.stamps.length;toast(c>=5?'5개 달성! 이번 주 개근 🎉':'오늘 도장 쾅! 🍋');render()})
     .catch(()=>{Q.busy=false;toast('도장을 못 찍었어요. 다시 눌러 주세요');render()})}
-function quizBar(){const st=anyState();if(!API||!st||!st.quiz)return null;const mine=curState();const dn=mine&&mine.quiz&&mine.quiz.done;
-  if(dn)return h('button',{class:'qbar fin'+(dn.ok?'':' miss'),onclick:openQuiz},'🍋 오늘의 퀴즈',h('span',{class:'go'},dn.ok?'✓ 정답! 결과 보기':'결과 보기'));
-  return h('button',{class:'qbar',onclick:openQuiz},'🍋 오늘의 퀴즈 도착!',h('span',{class:'go'},'풀어보기 →'))}
-function openQuiz(){Q.open=true;Q.pick=null;renderSheet()}
+function qzDone(qz){return qz?qz.qs.filter(q=>q.done).length:0}
+function quizBar(){const st=anyState();if(!API||!st||!st.quiz)return null;const mine=curState();const qz=mine&&mine.quiz;const n=qz?qz.qs.length:st.quiz.qs.length,dn=qzDone(qz);
+  if(qz&&dn>=n){const ok=qz.qs.filter(q=>q.done.ok).length;return h('button',{class:'qbar fin'+(ok===n?'':' miss'),onclick:openQuiz},'🍋 오늘의 퀴즈',h('span',{class:'go'},`${ok===n?'✓ ':''}${ok}/${n} 정답 · 결과 보기`))}
+  return h('button',{class:'qbar',onclick:openQuiz},'🍋 깜짝 퀴즈 도착!',h('span',{class:'go'},dn?`이어서 풀기 (${dn}/${n}) →`:`${n}문제 풀기 →`))}
+function openQuiz(){Q.open=true;Q.pick=null;Q.view=null;renderSheet()}
 function closeQuiz(){Q.open=false;renderSheet()}
 function renderSheet(){let el=document.getElementById('qsheet');if(!Q.open){if(el)el.remove();return}
   const body=sheetBody();if(!el){el=h('div',{id:'qsheet',class:'scrim',onclick:e=>{if(e.target===el)closeQuiz()}});document.body.append(el)}
   el.replaceChildren(body)}
 function sheetBody(){const st=curState()||anyState();const qz=st&&st.quiz;
-  const head=h('div',{class:'q-h'},'오늘의 퀴즈',h('button',{class:'x','aria-label':'닫기',onclick:closeQuiz},'×'));
-  const box=h('div',{class:'sheet',role:'dialog','aria-modal':'true','aria-label':'오늘의 퀴즈'},h('span',{class:'grab'}),head);
+  const head=h('div',{class:'q-h'},'깜짝 퀴즈',h('button',{class:'x','aria-label':'닫기',onclick:closeQuiz},'×'));
+  const box=h('div',{class:'sheet',role:'dialog','aria-modal':'true','aria-label':'깜짝 퀴즈'},h('span',{class:'grab'}),head);
   if(!qz){box.append(h('div',{class:'note'},'오늘은 퀴즈가 없어요.'));return box}
   if(!S.me){const names=(S.data?S.data.members:[]).map(m=>m.n).sort((a,b)=>a.localeCompare(b,'ko'));
-    box.append(h('div',{class:'q'},'누구세요?'),h('div',{class:'meta'},'이름을 고르면 퀴즈가 시작돼요. 정답이면 골드 도장!'),
+    box.append(h('div',{class:'q'},'누구세요?'),h('div',{class:'meta'},`이름을 고르면 퀴즈가 시작돼요. ${qz.qs.length}문제 모두 맞히면 골드 도장!`),
       h('div',{class:'picker'},names.map(n=>h('button',{class:'chip',onclick:()=>{S.me=n;try{localStorage.setItem('lemoncoin.me',n)}catch(e){}render();refreshState();renderSheet()}},n))));return box}
   const mine=curState();if(!mine){box.append(h('div',{class:'note'},'불러오는 중…'));return box}
-  const q=mine.quiz,dn=q.done;
-  box.append(h('div',{class:'meta'},`${S.me}의 도전`),h('div',{class:'q'},q.q),
-    h('div',{class:'opts'},q.opts.map((o,i)=>{const n=i+1;let cls='opt';let pre='';
-      if(dn){if(n===dn.ans){cls+=' ok';pre='✓ '}else if(n===dn.c){cls+=' no';pre='✕ '}}else if(Q.pick===n)cls+=' ok';
-      return h('button',{class:cls,disabled:!!dn||Q.busy,onclick:()=>answerQuiz(n)},pre+o)})));
-  if(dn){box.append(h('div',{class:'res'+(dn.ok?'':' no')},h('b',{},dn.ok?'정답이에요! 🎉':'아쉽지만 오답이에요'),
-      (dn.ex?dn.ex+' ':'')+(dn.ok?'오늘 도장이 골드로 바뀌었어요.':'출석 도장은 찍혔어요. 내일 또 도전!')));
-    const s=q.stats,pct=s.n?Math.round(s.ok/s.n*100):0;
-    box.append(h('div',{class:'qstat'},'팀 정답률',h('span',{class:'bar'},h('i',{style:`width:${pct}%`})),`${pct}% · ${s.n}명 참여`))}
-  else box.append(h('div',{class:'meta'},Q.busy?'채점 중…':'한 번만 고를 수 있어요. 신중하게!'));
+  const z=mine.quiz,n=z.qs.length,dn=qzDone(z);
+  // 보여줄 문제: 직접 고른 번호(Q.view) → 아직 안 푼 첫 문제 → 다 풀었으면 요약
+  let qi=Q.view;if(qi==null){qi=z.qs.findIndex(q=>!q.done);if(qi<0)qi=-1}
+  if(qi===-1){const ok=z.qs.filter(q=>q.done.ok).length,s=z.stats||{n:0,perfect:0},pct=s.n?Math.round(s.perfect/s.n*100):0;
+    box.append(h('div',{class:'meta'},`${S.me}의 결과`),h('div',{class:'q'},ok===n?`${n}문제 모두 정답! 🎉`:`${n}문제 중 ${ok}개 정답`),
+      h('div',{class:'res'+(ok===n?'':' no')},ok===n?'오늘 도장이 골드로 바뀌었어요.':'출석 도장은 찍혔어요. 다음 깜짝 퀴즈에서 골드 도장 도전!'),
+      h('div',{class:'opts'},z.qs.map((q,i)=>h('button',{class:'opt',onclick:()=>{Q.view=i;renderSheet()}},`${q.done.ok?'✓':'✕'}  ${i+1}. ${q.q}`))),
+      h('div',{class:'qstat'},'모두 맞힌 사람',h('span',{class:'bar'},h('i',{style:`width:${pct}%`})),`${s.perfect}명 / ${s.n}명 참여`));
+    return box}
+  const q=z.qs[qi],d=q.done;
+  box.append(h('div',{class:'meta'},`${S.me}의 도전 · ${qi+1} / ${n}`),h('div',{class:'q'},q.q),
+    h('div',{class:'opts'},q.opts.map((o,i)=>{const k=i+1;let cls='opt',pre='';
+      if(d){if(k===d.ans){cls+=' ok';pre='✓ '}else if(k===d.c){cls+=' no';pre='✕ '}}else if(Q.pick===k)cls+=' ok';
+      return h('button',{class:cls,disabled:!!d||Q.busy,onclick:()=>answerQuiz(qi,k)},pre+o)})));
+  if(d){box.append(h('div',{class:'res'+(d.ok?'':' no')},h('b',{},d.ok?'정답이에요! 🎉':'아쉽지만 오답이에요'),d.ex||''));
+    const next=z.qs.findIndex((x,i)=>!x.done&&i!==qi);
+    box.append(h('button',{class:'stampbtn qnext',onclick:()=>{Q.view=next>=0?next:-1;renderSheet()}},next>=0?'다음 문제 →':'결과 보기'))}
+  else box.append(h('div',{class:'meta'},Q.busy?'채점 중…':'문제마다 한 번만 고를 수 있어요.'));
   return box}
-function answerQuiz(n){if(Q.busy||!S.me)return;Q.busy=true;Q.pick=n;renderSheet();const who=S.me;
-  api({a:'answer',name:who,c:n}).then(j=>{Q.st[who]=j;Q.busy=false;Q.pick=null;render();renderSheet()})
+function answerQuiz(qi,k){if(Q.busy||!S.me)return;Q.busy=true;Q.pick=k;renderSheet();const who=S.me;
+  api({a:'answer',name:who,qi,choice:k}).then(j=>{Q.st[who]=j;Q.busy=false;Q.pick=null;Q.view=qi;render();renderSheet()})
     .catch(e=>{Q.busy=false;Q.pick=null;toast('전송에 실패했어요. 다시 눌러 주세요'+(e&&e.message?` (${String(e.message).slice(0,60)})`:''));renderSheet();refreshState()})}
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&Q.open)closeQuiz()});
 
