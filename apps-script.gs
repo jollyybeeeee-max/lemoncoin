@@ -67,10 +67,11 @@ function state_(name) {
   return { today: ymd_(), monday: mon, stamps: stamps, quiz: quizState_(name) };
 }
 
-/* ---------- 이번 주 퀴즈 (매주 월요일 · 그 주 학습 내용 3문제) ---------- */
+/* ---------- 이번 주 퀴즈 (매주 화요일 오픈 · 그 주 학습 내용 3문제) ---------- */
 // quiz 탭 H열 '주차(월요일 날짜)'에 그 주 월요일 날짜를 적으면 (예: 2026-11-23)
 // 그 주에 해당 문제들 중 3문제가 랜덤으로 나와요. 그 주 문제가 없으면 퀴즈도 쉬어요.
 const QUIZ_COUNT = 3;
+const QUIZ_OPEN_DOW = 2; // 1=월 2=화 … 화요일부터 일요일까지 열려요
 function rnd_(n) { let x = (n * 2654435761) % 4294967296; x = (x ^ (x >>> 15)) * 2246822519 % 4294967296; return (x ^ (x >>> 13)) >>> 0; }
 function weekOf_(v) {
   if (v instanceof Date) return ymd_(v);
@@ -87,6 +88,7 @@ function bank_() {
   })).filter(x => x.q && x.opts.length >= 2 && x.ans >= 1 && x.ans <= x.opts.length);
 }
 function todayQuiz_() {
+  if (Number(Utilities.formatDate(new Date(), TZ, 'u')) < QUIZ_OPEN_DOW) return null; // 월요일은 쉬고 화요일에 열려요
   const mon = monday_();
   const b = bank_().filter(x => x.wk === mon);
   if (!b.length) return null;

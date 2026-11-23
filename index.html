@@ -308,7 +308,7 @@ function sheetBody(){const st=curState()||anyState();const qz=st&&st.quiz;
   let qi=Q.view;if(qi==null){qi=z.qs.findIndex(q=>!q.done);if(qi<0)qi=-1}
   if(qi===-1){const ok=z.qs.filter(q=>q.done.ok).length,s=z.stats||{n:0,perfect:0},pct=s.n?Math.round(s.perfect/s.n*100):0;
     box.append(h('div',{class:'meta'},`${S.me}의 결과`),h('div',{class:'q'},ok===n?`${n}문제 모두 정답! 🎉`:`${n}문제 중 ${ok}개 정답`),
-      h('div',{class:'res'+(ok===n?'':' no')},ok===n?'오늘 도장이 골드로 바뀌었어요. 새 문제는 다음 주 월요일에 나와요.':'출석 도장은 찍혔어요. 다음 주 퀴즈에서 골드 도장 도전!'),
+      h('div',{class:'res'+(ok===n?'':' no')},ok===n?'오늘 도장이 골드로 바뀌었어요. 새 문제는 다음 주 화요일에 나와요.':'출석 도장은 찍혔어요. 다음 주 퀴즈에서 골드 도장 도전!'),
       h('div',{class:'opts'},z.qs.map((q,i)=>h('button',{class:'opt',onclick:()=>{Q.view=i;renderSheet()}},`${q.done.ok?'✓':'✕'}  ${i+1}. ${q.q}`))),
       h('div',{class:'qstat'},'모두 맞힌 사람',h('span',{class:'bar'},h('i',{style:`width:${pct}%`})),`${s.perfect}명 / ${s.n}명 참여`));
     return box}
