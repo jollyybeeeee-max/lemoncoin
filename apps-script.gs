@@ -67,9 +67,9 @@ function state_(name) {
   return { today: ymd_(), monday: mon, stamps: stamps, quiz: quizState_(name) };
 }
 
-/* ---------- 깜짝 퀴즈 (일주일에 한 번 · 3문제) ---------- */
+/* ---------- 이번 주 퀴즈 (매주 월요일 새 3문제) ---------- */
 const QUIZ_COUNT = 3;     // 한 주에 푸는 문제 수
-const QUIZ_OPEN_DAYS = 3; // 화·수·목 중 랜덤한 날 열려서 그 주 일요일까지 열려 있어요
+// 매주 월요일에 새 문제로 열려서 일요일까지 열려 있어요
 function bank_() {
   const s = tab_('quiz', ['문제', '보기1', '보기2', '보기3', '보기4', '정답(1~4)', '해설']);
   return rows_(s, 7).map((r, i) => ({
@@ -82,8 +82,7 @@ function rnd_(n) { let x = (n * 2654435761) % 4294967296; x = (x ^ (x >>> 15)) *
 function weekIdx_() { return Math.floor((dayNum_() + 3) / 7); } // 월요일 시작 주 번호
 function todayQuiz_() {
   const b = bank_(), d = dayNum_(), w = weekIdx_();
-  const dow = d + 3 - w * 7; // 0=월 … 6=일
-  if (!b.length || dow < 1 + rnd_(w + 7919) % QUIZ_OPEN_DAYS) return null;
+  if (!b.length) return null;
   const order = b.map((x, i) => i);
   let seed = 20261120;
   for (let i = order.length - 1; i > 0; i--) {
