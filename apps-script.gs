@@ -67,9 +67,9 @@ function state_(name) {
   return { today: ymd_(), monday: mon, stamps: stamps, quiz: quizState_(name) };
 }
 
-/* ---------- 오늘의 퀴즈 (랜덤한 날 · 2문제) ---------- */
-const QUIZ_PER_DAY = 2;      // 한 번에 푸는 문제 수
-const QUIZ_DAYS_PER_WEEK = 3; // 일주일에 퀴즈가 열리는 날 수(평균)
+/* ---------- 깜짝 퀴즈 (일주일에 한 번 · 3문제) ---------- */
+const QUIZ_COUNT = 3;     // 한 주에 푸는 문제 수
+const QUIZ_OPEN_DAYS = 3; // 화·수·목 중 랜덤한 날 열려서 그 주 일요일까지 열려 있어요
 function bank_() {
   const s = tab_('quiz', ['문제', '보기1', '보기2', '보기3', '보기4', '정답(1~4)', '해설']);
   return rows_(s, 7).map((r, i) => ({
@@ -79,33 +79,33 @@ function bank_() {
   })).filter(x => x.q && x.opts.length >= 2 && x.ans >= 1 && x.ans <= x.opts.length);
 }
 function rnd_(n) { let x = (n * 2654435761) % 4294967296; x = (x ^ (x >>> 15)) * 2246822519 % 4294967296; return (x ^ (x >>> 13)) >>> 0; }
-function isQuizDay_(d) { return rnd_(d + 7919) % 7 < QUIZ_DAYS_PER_WEEK; }
+function weekIdx_() { return Math.floor((dayNum_() + 3) / 7); } // 월요일 시작 주 번호
 function todayQuiz_() {
-  const b = bank_(), d = dayNum_();
-  if (!b.length || !isQuizDay_(d)) return null;
+  const b = bank_(), d = dayNum_(), w = weekIdx_();
+  const dow = d + 3 - w * 7; // 0=월 … 6=일
+  if (!b.length || dow < 1 + rnd_(w + 7919) % QUIZ_OPEN_DAYS) return null;
   const order = b.map((x, i) => i);
   let seed = 20261120;
   for (let i = order.length - 1; i > 0; i--) {
     seed = (seed * 1103515245 + 12345) % 2147483648;
     const j = seed % (i + 1); const t = order[i]; order[i] = order[j]; order[j] = t;
   }
-  let k = 0; for (let x = 19000; x < d; x++) if (isQuizDay_(x)) k++; // 지금까지 열린 퀴즈 날 수
-  const n = Math.min(QUIZ_PER_DAY, b.length), out = [];
-  for (let i = 0; i < n; i++) out.push(b[order[(k * QUIZ_PER_DAY + i) % b.length]]);
+  const n = Math.min(QUIZ_COUNT, b.length), out = [];
+  for (let i = 0; i < n; i++) out.push(b[order[(w * QUIZ_COUNT + i) % b.length]]);
   return out;
 }
 function answerTab_() { return tab_('answers', ['날짜', '이름', '문제 행', '고른 답', '정답 여부', '시각']); }
 function quizState_(name) {
   const qs = todayQuiz_();
   if (!qs) return null;
-  const t = ymd_(), rowsSet = qs.map(q => q.row);
-  const today = rows_(answerTab_(), 5).filter(r => Number(r[0]) === t && rowsSet.indexOf(Number(r[2])) >= 0);
+  const mon = monday_(), rowsSet = qs.map(q => q.row);
+  const today = rows_(answerTab_(), 5).filter(r => Number(r[0]) >= mon && rowsSet.indexOf(Number(r[2])) >= 0);
   const people = {};
   today.forEach(r => { const p = people[r[1]] || (people[r[1]] = { n: 0, ok: 0 }); p.n++; if (r[4]) p.ok++; });
   const fin = Object.keys(people).filter(k => people[k].n >= qs.length);
   const stats = { n: fin.length, perfect: fin.filter(k => people[k].ok >= qs.length).length };
   return {
-    id: t + '-' + rowsSet.join('-'), stats: stats,
+    id: mon + '-' + rowsSet.join('-'), stats: stats,
     qs: qs.map(q => {
       const mine = name ? today.filter(r => r[1] === name && Number(r[2]) === q.row)[0] : null;
       const o = { q: q.q, opts: q.opts };
@@ -118,7 +118,8 @@ function answer_(name, qi, c) {
   const qs = todayQuiz_();
   if (!qs || !qs[qi]) return { err: 'noquiz' };
   const q = qs[qi], t = ymd_(), s = answerTab_();
-  const mineRows = rows_(s, 5).filter(r => Number(r[0]) === t && r[1] === name);
+  const mon = monday_();
+  const mineRows = rows_(s, 5).filter(r => Number(r[0]) >= mon && r[1] === name);
   if (mineRows.some(r => Number(r[2]) === q.row)) return { already: true };
   if (!(c >= 1 && c <= q.opts.length)) return { err: 'choice' };
   const ok = c === q.ans;

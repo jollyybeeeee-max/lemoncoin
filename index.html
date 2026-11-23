@@ -259,6 +259,7 @@ function tickerView(d){
 
 
 /* ---------- 출석 도장 · 오늘의 퀴즈 (Apps Script) ---------- */
+const QUIZ_ON=false; // Apps Script 업데이트 후 true
 const API='https://script.google.com/macros/s/AKfycbx4fwPV2YrbsykVepAAkzwVsjzJHn2JzyfQOvY23XpGNDoLc57ZfsGgKFyaL1aR-lj7Vw/exec';
 const DOWS=['월','화','수','목','금','토','일'];
 const Q={st:{},busy:false,open:false,pick:null,err:''};
@@ -286,7 +287,7 @@ function doStamp(){if(Q.busy||!S.me)return;Q.busy=true;render();const who=S.me;
   api({a:'stamp',name:who}).then(j=>{Q.st[who]=j;Q.busy=false;const c=j.stamps.length;toast(c>=5?'5개 달성! 이번 주 개근 🎉':'오늘 도장 쾅! 🍋');render()})
     .catch(()=>{Q.busy=false;toast('도장을 못 찍었어요. 다시 눌러 주세요');render()})}
 function qzDone(qz){return qz?qz.qs.filter(q=>q.done).length:0}
-function quizBar(){const st=anyState();if(!API||!st||!st.quiz)return null;const mine=curState();const qz=mine&&mine.quiz;const n=qz?qz.qs.length:st.quiz.qs.length,dn=qzDone(qz);
+function quizBar(){const st=anyState();if(!QUIZ_ON||!API||!st||!st.quiz)return null;const mine=curState();const qz=mine&&mine.quiz;const n=qz?qz.qs.length:st.quiz.qs.length,dn=qzDone(qz);
   if(qz&&dn>=n){const ok=qz.qs.filter(q=>q.done.ok).length;return h('button',{class:'qbar fin'+(ok===n?'':' miss'),onclick:openQuiz},'🍋 오늘의 퀴즈',h('span',{class:'go'},`${ok===n?'✓ ':''}${ok}/${n} 정답 · 결과 보기`))}
   return h('button',{class:'qbar',onclick:openQuiz},'🍋 깜짝 퀴즈 도착!',h('span',{class:'go'},dn?`이어서 풀기 (${dn}/${n}) →`:`${n}문제 풀기 →`))}
 function openQuiz(){Q.open=true;Q.pick=null;Q.view=null;renderSheet()}
@@ -297,7 +298,7 @@ function renderSheet(){let el=document.getElementById('qsheet');if(!Q.open){if(e
 function sheetBody(){const st=curState()||anyState();const qz=st&&st.quiz;
   const head=h('div',{class:'q-h'},'깜짝 퀴즈',h('button',{class:'x','aria-label':'닫기',onclick:closeQuiz},'×'));
   const box=h('div',{class:'sheet',role:'dialog','aria-modal':'true','aria-label':'깜짝 퀴즈'},h('span',{class:'grab'}),head);
-  if(!qz){box.append(h('div',{class:'note'},'오늘은 퀴즈가 없어요.'));return box}
+  if(!qz){box.append(h('div',{class:'note'},'이번 주 퀴즈는 아직 열리지 않았어요.'));return box}
   if(!S.me){const names=(S.data?S.data.members:[]).map(m=>m.n).sort((a,b)=>a.localeCompare(b,'ko'));
     box.append(h('div',{class:'q'},'누구세요?'),h('div',{class:'meta'},`이름을 고르면 퀴즈가 시작돼요. ${qz.qs.length}문제 모두 맞히면 골드 도장!`),
       h('div',{class:'picker'},names.map(n=>h('button',{class:'chip',onclick:()=>{S.me=n;try{localStorage.setItem('lemoncoin.me',n)}catch(e){}render();refreshState();renderSheet()}},n))));return box}
@@ -307,7 +308,7 @@ function sheetBody(){const st=curState()||anyState();const qz=st&&st.quiz;
   let qi=Q.view;if(qi==null){qi=z.qs.findIndex(q=>!q.done);if(qi<0)qi=-1}
   if(qi===-1){const ok=z.qs.filter(q=>q.done.ok).length,s=z.stats||{n:0,perfect:0},pct=s.n?Math.round(s.perfect/s.n*100):0;
     box.append(h('div',{class:'meta'},`${S.me}의 결과`),h('div',{class:'q'},ok===n?`${n}문제 모두 정답! 🎉`:`${n}문제 중 ${ok}개 정답`),
-      h('div',{class:'res'+(ok===n?'':' no')},ok===n?'오늘 도장이 골드로 바뀌었어요.':'출석 도장은 찍혔어요. 다음 깜짝 퀴즈에서 골드 도장 도전!'),
+      h('div',{class:'res'+(ok===n?'':' no')},ok===n?'오늘 도장이 골드로 바뀌었어요.':'출석 도장은 찍혔어요. 다음 주 깜짝 퀴즈에서 골드 도장 도전!'),
       h('div',{class:'opts'},z.qs.map((q,i)=>h('button',{class:'opt',onclick:()=>{Q.view=i;renderSheet()}},`${q.done.ok?'✓':'✕'}  ${i+1}. ${q.q}`))),
       h('div',{class:'qstat'},'모두 맞힌 사람',h('span',{class:'bar'},h('i',{style:`width:${pct}%`})),`${s.perfect}명 / ${s.n}명 참여`));
     return box}
