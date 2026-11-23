@@ -262,7 +262,7 @@ const API='https://script.google.com/macros/s/AKfycbx4fwPV2YrbsykVepAAkzwVsjzJHn
 const DOWS=['월','화','수','목','금','토','일'];
 const Q={st:{},busy:false,open:false,pick:null,err:''};
 function api(params){const u=new URL(API);for(const k in params)if(params[k]!=null)u.searchParams.set(k,params[k]);
-  return fetch(u).then(r=>r.json()).then(j=>{if(!j.ok)throw new Error(j.err||'fail');return j})}
+  return fetch(u).then(r=>r.text()).then(t=>{let j;try{j=JSON.parse(t)}catch(_){throw new Error('응답 형식 오류: '+t.replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim().slice(0,50))}if(!j.ok)throw new Error(j.err||'fail');return j})}
 function refreshState(){if(!API)return;const who=S.me||'';
   api({a:'state',name:who}).then(j=>{Q.st[who]=j;Q.err='';render();renderSheet()}).catch(()=>{Q.err='net';render()})}
 const curState=()=>Q.st[S.me||'']||null;
@@ -313,7 +313,7 @@ function sheetBody(){const st=curState()||anyState();const qz=st&&st.quiz;
   return box}
 function answerQuiz(n){if(Q.busy||!S.me)return;Q.busy=true;Q.pick=n;renderSheet();const who=S.me;
   api({a:'answer',name:who,c:n}).then(j=>{Q.st[who]=j;Q.busy=false;Q.pick=null;render();renderSheet()})
-    .catch(()=>{Q.busy=false;Q.pick=null;toast('전송에 실패했어요. 다시 눌러 주세요');renderSheet()})}
+    .catch(e=>{Q.busy=false;Q.pick=null;toast('전송에 실패했어요. 다시 눌러 주세요'+(e&&e.message?` (${String(e.message).slice(0,60)})`:''));renderSheet();refreshState()})}
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&Q.open)closeQuiz()});
 
 function meView(d){
