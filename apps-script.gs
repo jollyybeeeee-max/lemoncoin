@@ -67,31 +67,36 @@ function state_(name) {
   return { today: ymd_(), monday: mon, stamps: stamps, quiz: quizState_(name) };
 }
 
-/* ---------- 이번 주 퀴즈 (매주 월요일 새 3문제) ---------- */
-const QUIZ_COUNT = 3;     // 한 주에 푸는 문제 수
-// 매주 월요일에 새 문제로 열려서 일요일까지 열려 있어요
+/* ---------- 이번 주 퀴즈 (매주 월요일 · 그 주 학습 내용 3문제) ---------- */
+// quiz 탭 H열 '주차(월요일 날짜)'에 그 주 월요일 날짜를 적으면 (예: 2026-11-23)
+// 그 주에 해당 문제들 중 3문제가 랜덤으로 나와요. 그 주 문제가 없으면 퀴즈도 쉬어요.
+const QUIZ_COUNT = 3;
+function rnd_(n) { let x = (n * 2654435761) % 4294967296; x = (x ^ (x >>> 15)) * 2246822519 % 4294967296; return (x ^ (x >>> 13)) >>> 0; }
+function weekOf_(v) {
+  if (v instanceof Date) return ymd_(v);
+  const m = String(v || '').match(/(\d{4})\D*(\d{1,2})\D*(\d{1,2})/);
+  return m ? Number(m[1]) * 10000 + Number(m[2]) * 100 + Number(m[3]) : 0;
+}
 function bank_() {
-  const s = tab_('quiz', ['문제', '보기1', '보기2', '보기3', '보기4', '정답(1~4)', '해설']);
-  return rows_(s, 7).map((r, i) => ({
+  const s = tab_('quiz', ['문제', '보기1', '보기2', '보기3', '보기4', '정답(1~4)', '해설', '주차(월요일 날짜)']);
+  if (s.getLastColumn() < 8 || !s.getRange(1, 8).getValue()) s.getRange(1, 8).setValue('주차(월요일 날짜)');
+  return rows_(s, 8).map((r, i) => ({
     row: i + 2, q: String(r[0]).trim(),
     opts: [r[1], r[2], r[3], r[4]].map(String).map(x => x.trim()).filter(Boolean),
-    ans: Number(r[5]), ex: String(r[6] || '').trim()
+    ans: Number(r[5]), ex: String(r[6] || '').trim(), wk: weekOf_(r[7])
   })).filter(x => x.q && x.opts.length >= 2 && x.ans >= 1 && x.ans <= x.opts.length);
 }
-function rnd_(n) { let x = (n * 2654435761) % 4294967296; x = (x ^ (x >>> 15)) * 2246822519 % 4294967296; return (x ^ (x >>> 13)) >>> 0; }
-function weekIdx_() { return Math.floor((dayNum_() + 3) / 7); } // 월요일 시작 주 번호
 function todayQuiz_() {
-  const b = bank_(), d = dayNum_(), w = weekIdx_();
+  const mon = monday_();
+  const b = bank_().filter(x => x.wk === mon);
   if (!b.length) return null;
   const order = b.map((x, i) => i);
-  let seed = 20261120;
+  let seed = mon;
   for (let i = order.length - 1; i > 0; i--) {
     seed = (seed * 1103515245 + 12345) % 2147483648;
     const j = seed % (i + 1); const t = order[i]; order[i] = order[j]; order[j] = t;
   }
-  const n = Math.min(QUIZ_COUNT, b.length), out = [];
-  for (let i = 0; i < n; i++) out.push(b[order[(w * QUIZ_COUNT + i) % b.length]]);
-  return out;
+  return order.slice(0, Math.min(QUIZ_COUNT, b.length)).map(i => b[i]);
 }
 function answerTab_() { return tab_('answers', ['날짜', '이름', '문제 행', '고른 답', '정답 여부', '시각']); }
 function quizState_(name) {
