@@ -300,7 +300,7 @@ function doStamp(){if(Q.busy||!S.me)return;Q.busy=true;render();const who=S.me;
     .catch(()=>{Q.busy=false;toast('도장을 못 찍었어요. 다시 눌러 주세요');render()})}
 function qzDone(qz){return qz?qz.qs.filter(q=>q.done).length:0}
 function quizBar(){const st=anyState();if(!QUIZ_ON||!API||!st||!st.quiz)return null;const mine=curState();const qz=mine&&mine.quiz;const n=qz?qz.qs.length:st.quiz.qs.length,dn=qzDone(qz);
-  if(qz&&dn>=n){const ok=qz.qs.filter(q=>q.done.ok).length;return h('button',{class:'qbar fin'+(ok===n?'':' miss'),onclick:openQuiz},'🍋 이번 주 퀴즈',h('span',{class:'go'},`${ok===n?'✓ ':''}${ok}/${n} 정답 · 결과 보기`))}
+  if(qz&&dn>=n&&!Q.open)return null; // 다 풀면 다음 주 퀴즈가 열릴 때까지 숨김
   return h('button',{class:'qbar',onclick:openQuiz},'🍋 이번 주 퀴즈 도착!',h('span',{class:'go'},dn?`이어서 풀기 (${dn}/${n}) →`:`${n}문제 풀기 →`))}
 function openQuiz(){Q.open=true;Q.pick=null;Q.view=null;renderSheet()}
 function closeQuiz(){Q.open=false;renderSheet()}
