@@ -312,7 +312,7 @@ function quizBar(){const st=anyState();if(!QUIZ_ON||!API||!st||!st.quiz)return n
   if(qz&&dn>=n&&!Q.open)return null; // 다 풀면 다음 주 퀴즈가 열릴 때까지 숨김
   return h('button',{class:'qbar',onclick:openQuiz},'🍋 이번 주 퀴즈 도착!',h('span',{class:'go'},dn?`이어서 풀기 (${dn}/${n}) →`:`${n}문제 풀기 →`))}
 function openQuiz(){Q.open=true;Q.pick=null;Q.view=null;renderSheet()}
-function closeQuiz(){Q.open=false;renderSheet()}
+function closeQuiz(){Q.open=false;renderSheet();render()}
 function renderSheet(){let el=document.getElementById('qsheet');if(!Q.open){if(el)el.remove();return}
   const body=sheetBody();if(!el){el=h('div',{id:'qsheet',class:'scrim',onclick:e=>{if(e.target===el)closeQuiz()}});document.body.append(el)}
   el.replaceChildren(body)}
