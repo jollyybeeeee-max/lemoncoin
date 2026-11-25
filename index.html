@@ -167,25 +167,26 @@ header>.fame-btn{margin-left:auto;align-self:flex-start;flex:none;display:flex;f
 .att .tip{font-size:12px;color:var(--muted);flex:1;text-align:center}
 .toast{position:fixed;left:50%;bottom:max(24px,env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);font-size:13px;font-weight:600;padding:9px 16px;border-radius:999px;z-index:30;pointer-events:none}
 /* 오늘의 퀴즈 띠 + 팝업 */
-.qbar{display:flex;align-items:center;gap:8px;background:var(--ink);color:var(--bg);border:0;border-radius:12px;padding:11px 14px;font-size:14px;font-weight:600;text-align:left;cursor:pointer;width:100%}
-.qbar .go{margin-left:auto;color:var(--lemon);font-size:13px;white-space:nowrap}
+.qbar{display:flex;align-items:center;gap:8px;background:var(--ink);color:var(--bg);border:0;border-radius:12px;padding:13px 16px;font-size:16px;font-weight:600;text-align:left;cursor:pointer;width:100%}
+.qbar .go{margin-left:auto;color:var(--lemon);font-size:15px;white-space:nowrap}
 .qbar.fin{background:var(--surface);color:var(--ink);border:1px solid var(--line)}
 .qbar.fin .go{color:var(--good)}.qbar.fin.miss .go{color:var(--muted)}
 .scrim{position:fixed;inset:0;background:rgba(20,22,16,.45);display:flex;align-items:flex-end;justify-content:center;z-index:20}
 .sheet{background:var(--surface);color:var(--ink);width:100%;max-width:640px;max-height:88vh;overflow:auto;border-radius:20px 20px 0 0;padding:10px 18px max(28px,env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:12px;box-shadow:0 -8px 30px rgba(0,0,0,.15)}
 .grab{width:40px;height:4px;border-radius:9px;background:var(--line);align-self:center;flex:none}
-.sheet .q-h{display:flex;align-items:center;font-size:12px;font-weight:700;color:var(--muted)}
+.sheet .q-h{display:flex;align-items:center;font-size:15px;font-weight:700;color:var(--ink)}
+.sheet .meta{font-size:14px;color:var(--ink);opacity:.72}
 .sheet .x{margin-left:auto;border:0;background:var(--bg);width:30px;height:30px;border-radius:50%;font-size:17px;cursor:pointer}
-.sheet .q{font-size:18px;font-weight:600;line-height:1.45}
+.sheet .q{font-size:20px;font-weight:700;line-height:1.45;letter-spacing:-.01em}
 .sheet .opts{display:grid;gap:6px}
-.sheet .opt{border:1px solid var(--line);background:var(--bg);text-align:left;font-size:15px;padding:12px 14px;border-radius:12px;cursor:pointer}
+.sheet .opt{border:1.5px solid var(--line);background:var(--bg);color:var(--ink);text-align:left;font-size:17px;font-weight:500;padding:14px 16px;border-radius:12px;cursor:pointer}
 .sheet .opt:disabled{cursor:default}
 .sheet .opt.ok{background:var(--lemon);border-color:var(--lemon);color:var(--on-lemon);font-weight:600}
 .sheet .opt.no{border-color:var(--bad);color:var(--bad)}
-.sheet .res{background:var(--lemon-soft);border-radius:12px;padding:12px 14px;font-size:13px;line-height:1.55}
+.sheet .res{background:var(--lemon-soft);color:var(--ink);border-radius:12px;padding:14px 16px;font-size:15px;line-height:1.6}
 .sheet .res.no{background:var(--bg)}
-.sheet .res b{display:block;font-size:15px;margin-bottom:2px}
-.qstat{display:flex;gap:8px;align-items:center;font-size:12px;color:var(--muted)}
+.sheet .res b{display:block;font-size:17px;margin-bottom:4px}
+.qstat{display:flex;gap:8px;align-items:center;font-size:14px;color:var(--ink);opacity:.8}
 .qstat .bar{flex:1;height:6px;border-radius:99px;background:var(--bg);overflow:hidden}.qstat .bar i{display:block;height:100%;background:var(--lemon)}
 .sheet .picker{flex-wrap:wrap}
 .sng{display:flex;flex-direction:column;gap:8px}
