@@ -74,7 +74,7 @@ const QUIZ_COUNT = 3;
 const QUIZ_OPEN_DOW = 2; // 1=월 2=화 … 화요일부터 일요일까지 열려요
 function rnd_(n) { let x = (n * 2654435761) % 4294967296; x = (x ^ (x >>> 15)) * 2246822519 % 4294967296; return (x ^ (x >>> 13)) >>> 0; }
 function weekOf_(v) {
-  if (v instanceof Date) return ymd_(v);
+  if (v && typeof v.getTime === 'function') return ymd_(v); // 날짜 칸으로 저장된 경우
   const m = String(v || '').match(/(\d{4})\D*(\d{1,2})\D*(\d{1,2})/);
   return m ? Number(m[1]) * 10000 + Number(m[2]) * 100 + Number(m[3]) : 0;
 }
