@@ -87,13 +87,21 @@ function bank_() {
     ans: Number(r[5]), ex: String(r[6] || '').trim(), wk: weekOf_(r[7])
   })).filter(x => x.q && x.opts.length >= 2 && x.ans >= 1 && x.ans <= x.opts.length);
 }
-function todayQuiz_() {
+function weekBank_() {
   if (Number(Utilities.formatDate(new Date(), TZ, 'u')) < QUIZ_OPEN_DOW) return null; // 월요일은 쉬고 화요일에 열려요
   const mon = monday_();
   const b = bank_().filter(x => x.wk === mon);
-  if (!b.length) return null;
+  return b.length ? b : null;
+}
+// 사람마다 그 주 문제 은행에서 랜덤으로 3문제 (한 주 동안은 같은 사람에게 같은 3문제)
+function todayQuiz_(name) {
+  const b = weekBank_();
+  if (!b) return null;
+  const mon = monday_();
   const order = b.map((x, i) => i);
-  let seed = mon;
+  let seed = mon % 2147483648;
+  const key = String(name || '');
+  for (let i = 0; i < key.length; i++) seed = (seed * 31 + key.charCodeAt(i)) % 2147483648;
   for (let i = order.length - 1; i > 0; i--) {
     seed = (seed * 1103515245 + 12345) % 2147483648;
     const j = seed % (i + 1); const t = order[i]; order[i] = order[j]; order[j] = t;
@@ -102,10 +110,10 @@ function todayQuiz_() {
 }
 function answerTab_() { return tab_('answers', ['날짜', '이름', '문제 행', '고른 답', '정답 여부', '시각']); }
 function quizState_(name) {
-  const qs = todayQuiz_();
+  const qs = todayQuiz_(name);
   if (!qs) return null;
-  const mon = monday_(), rowsSet = qs.map(q => q.row);
-  const today = rows_(answerTab_(), 5).filter(r => Number(r[0]) >= mon && rowsSet.indexOf(Number(r[2])) >= 0);
+  const mon = monday_(), rowsSet = qs.map(q => q.row), weekRows = weekBank_().map(q => q.row);
+  const today = rows_(answerTab_(), 5).filter(r => Number(r[0]) >= mon && weekRows.indexOf(Number(r[2])) >= 0);
   const people = {};
   today.forEach(r => { const p = people[r[1]] || (people[r[1]] = { n: 0, ok: 0 }); p.n++; if (r[4]) p.ok++; });
   const fin = Object.keys(people).filter(k => people[k].n >= qs.length);
@@ -121,7 +129,7 @@ function quizState_(name) {
   };
 }
 function answer_(name, qi, c) {
-  const qs = todayQuiz_();
+  const qs = todayQuiz_(name);
   if (!qs || !qs[qi]) return { err: 'noquiz' };
   const q = qs[qi], t = ymd_(), s = answerTab_();
   const mon = monday_();
