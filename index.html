@@ -249,7 +249,7 @@ footer{color:var(--muted);font-size:12px;text-align:center;padding-top:4px}
 const SHEET_ID='1cy61oMImMDPdjr0wOP0iMHJWYGn5Za26s620THmcSx8';
 const S={data:null,err:false,me:null,by:'e',showAll:false,fame:false};
 try{S.me=localStorage.getItem('lemoncoin.me')}catch(e){}
-try{const b=localStorage.getItem('lemoncoin.by');if(b==='e'||b==='w')S.by=b}catch(e){}
+try{const b=localStorage.getItem('lemoncoin.by');if(b==='e'||b==='b')S.by=b}catch(e){}
 
 function h(tag,attrs,...kids){const el=document.createElement(tag);
   for(const k in attrs||{}){const v=attrs[k];if(v==null||v===false)continue;if(k.startsWith('on'))el.addEventListener(k.slice(2),v);else if(k==='text')el.textContent=v;else el.setAttribute(k,v===true?'':v)}
@@ -380,7 +380,7 @@ function meView(d){
 function rankView(d){
   const key=S.by;const r=rankOf(d.members,key);const top=r.filter(x=>x[key]>0&&x.rk<=3).slice(0,3);
   const card=h('section',{class:'card'},h('div',{class:'card-h'},h('h2',{},'순위'),
-    h('div',{class:'seg',role:'group','aria-label':'순위 기준'},[['e','누적'],['w','이번 주']].map(([k,l])=>h('button',{'aria-pressed':String(key===k),onclick:()=>{S.by=k;try{localStorage.setItem('lemoncoin.by',k)}catch(e){}render()}},l)))));
+    h('div',{class:'seg',role:'group','aria-label':'순위 기준'},[['e','누적'],['b','현재 보유']].map(([k,l])=>h('button',{'aria-pressed':String(key===k),onclick:()=>{S.by=k;try{localStorage.setItem('lemoncoin.by',k)}catch(e){}render()}},l)))));
   if(top.length){const order=[top[1],top[0],top[2]];
     card.append(h('div',{class:'podium'},order.map((x,i)=>{if(!x)return h('div');return h('div',{class:'pod p'+Math.min(x.rk,3)},h('div',{class:'who'},x.n),
       h('div',{class:'block'},h('span',{class:'n'},x.rk+'위'),h('b',{},key==='w'?sgn(x[key]):String(x[key]))))})))}
@@ -388,8 +388,8 @@ function rankView(d){
   const rest=S.showAll?r:r.slice(0,10);const max=Math.max(1,...r.map(x=>x[key]));
   card.append(h('div',{class:'list'},rest.map(x=>h('div',{class:'row'+(x.n===S.me?' me':'')},h('span',{class:'rank'+(x.rk<=3&&x[key]>0?' m'+x.rk:'')},String(x.rk)),
     h('div',{style:'min-width:0'},h('div',{class:'name'},x.n+(x.n===S.me?' (나)':'')),h('div',{class:'bar'},h('i',{style:`width:${Math.max(0,x[key])/max*100}%`}))),
-    h('div',{class:'two'},h('div',{class:'bal'},h('span',{class:'dot'}),key==='w'?sgn(x[key]):String(x[key]),h('small',{},key==='w'?'이번 주':'누적')),
-      h('div',{class:'bal hold'},String(x.b),h('small',{},'보유')))))));
+    h('div',{class:'two'},h('div',{class:'bal'},h('span',{class:'dot'}),String(x[key]),h('small',{},key==='b'?'보유':'누적')),
+      h('div',{class:'bal hold'},String(key==='b'?x.e:x.b),h('small',{},key==='b'?'누적':'보유')))))));
   if(r.length>10)card.append(h('button',{class:'more',onclick:()=>{S.showAll=!S.showAll;render()}},S.showAll?'접기':`전체 ${r.length}명 보기`));
   return card}
 
