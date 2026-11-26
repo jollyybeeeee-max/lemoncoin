@@ -171,6 +171,12 @@ header>.fame-btn{margin-left:auto;align-self:flex-start;flex:none;display:flex;f
 /* 오늘의 퀴즈 띠 + 팝업 */
 .qbar{display:flex;align-items:center;gap:8px;background:var(--ink);color:var(--bg);border:0;border-radius:12px;padding:13px 16px;font-size:16px;font-weight:600;text-align:left;cursor:pointer;width:100%}
 .qbar .go{margin-left:auto;color:var(--lemon);font-size:15px;white-space:nowrap}
+.qbar .qt{display:flex;flex-direction:column;gap:4px;min-width:0}
+.qbar .qpf{font-size:13px;font-weight:500;opacity:.75}
+.qbar .qpf.on{opacity:1;color:var(--lemon);animation:qpop 2.4s ease-in-out infinite}
+.qbar .qpf b{font-size:15px;font-weight:800}
+@keyframes qpop{0%,100%{transform:scale(1)}8%{transform:scale(1.08)}16%{transform:scale(1)}}
+@media (prefers-reduced-motion:reduce){.qbar .qpf.on{animation:none}}
 .qbar.fin{background:var(--surface);color:var(--ink);border:1px solid var(--line)}
 .qbar.fin .go{color:var(--good)}.qbar.fin.miss .go{color:var(--muted)}
 .scrim{position:fixed;inset:0;background:rgba(20,22,16,.45);display:flex;align-items:flex-end;justify-content:center;z-index:20}
@@ -312,7 +318,10 @@ function doStamp(){if(Q.busy||!S.me)return;Q.busy=true;render();const who=S.me;
 function qzDone(qz){return qz?qz.qs.filter(q=>q.done).length:0}
 function quizBar(){const st=anyState();if(!QUIZ_ON||!API||!st||!st.quiz)return null;const mine=curState();const qz=mine&&mine.quiz;const n=qz?qz.qs.length:st.quiz.qs.length,dn=qzDone(qz);
   if(qz&&dn>=n&&!Q.open)return null; // 다 풀면 다음 주 퀴즈가 열릴 때까지 숨김
-  return h('button',{class:'qbar',onclick:openQuiz},'🍋 이번 주 퀴즈 도착!',h('span',{class:'go'},dn?`이어서 풀기 (${dn}/${n}) →`:`${n}문제 풀기 →`))}
+  const pf=(st.quiz.stats&&st.quiz.stats.perfect)||0;
+  return h('button',{class:'qbar',onclick:openQuiz},h('span',{class:'qt'},h('span',{},'🍋 이번 주 퀴즈 도착!'),
+    h('span',{class:'qpf'+(pf?' on':'')},pf?h('span',{},'🏅 벌써 ',h('b',{},pf+'명'),' 만점!'):'첫 만점의 주인공이 되어 보세요')),
+    h('span',{class:'go'},dn?`이어서 풀기 (${dn}/${n}) →`:`${n}문제 풀기 →`))}
 function openQuiz(){Q.open=true;Q.pick=null;Q.view=null;renderSheet()}
 function closeQuiz(){Q.open=false;renderSheet();render()}
 function renderSheet(){let el=document.getElementById('qsheet');if(!Q.open){if(el)el.remove();return}
