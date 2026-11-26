@@ -116,6 +116,8 @@ h1{font-family:var(--display);font-weight:400;font-size:30px;line-height:1;margi
 .name{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .row .bar{margin-top:5px}
 .bal{font-family:var(--mono);font-weight:600;font-size:17px;font-variant-numeric:tabular-nums;display:flex;align-items:center;gap:5px}
+.two{display:flex;gap:12px;align-items:center}.two>.bal:first-child{min-width:64px;justify-content:flex-end}.bal small{font-family:inherit;font-size:11px;font-weight:500;color:var(--muted);margin-left:1px}
+.bal.hold{color:var(--muted);font-size:15px;min-width:44px;justify-content:flex-end}
 .more{align-self:flex-start;border:0;background:none;color:var(--muted);font-size:13px;text-decoration:underline;cursor:pointer;padding:0}
 
 /* 명예의 전당 */
@@ -377,7 +379,8 @@ function rankView(d){
   const rest=S.showAll?r:r.slice(0,10);const max=Math.max(1,...r.map(x=>x[key]));
   card.append(h('div',{class:'list'},rest.map(x=>h('div',{class:'row'+(x.n===S.me?' me':'')},h('span',{class:'rank'+(x.rk<=3&&x[key]>0?' m'+x.rk:'')},String(x.rk)),
     h('div',{style:'min-width:0'},h('div',{class:'name'},x.n+(x.n===S.me?' (나)':'')),h('div',{class:'bar'},h('i',{style:`width:${Math.max(0,x[key])/max*100}%`}))),
-    h('span',{class:'bal'},h('span',{class:'dot'}),key==='w'?sgn(x[key]):String(x[key]))))));
+    h('div',{class:'two'},h('div',{class:'bal'},h('span',{class:'dot'}),key==='w'?sgn(x[key]):String(x[key]),h('small',{},key==='w'?'이번 주':'누적')),
+      h('div',{class:'bal hold'},String(x.b),h('small',{},'보유')))))));
   if(r.length>10)card.append(h('button',{class:'more',onclick:()=>{S.showAll=!S.showAll;render()}},S.showAll?'접기':`전체 ${r.length}명 보기`));
   return card}
 
