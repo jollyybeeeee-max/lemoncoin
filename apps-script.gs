@@ -70,7 +70,14 @@ function state_(name) {
 /* ---------- 이번 주 퀴즈 (매주 화요일 오픈 · 그 주 학습 내용 3문제) ---------- */
 // quiz 탭 H열 '주차(월요일 날짜)'에 그 주 월요일 날짜를 적으면 (예: 2026-11-23)
 // 그 주에 해당 문제들 중 3문제가 랜덤으로 나와요. 그 주 문제가 없으면 퀴즈도 쉬어요.
-const QUIZ_COUNT = 3;
+// 문제 수는 시트 'settings' 탭 B2칸에서 읽어요 (비어 있으면 3문제). 스크립트를 다시 배포하지 않아도 바뀌어요.
+function quizCount_() {
+  try {
+    const s = SpreadsheetApp.getActive().getSheetByName('settings');
+    const v = Math.floor(Number(s && s.getRange('B2').getValue()));
+    return v >= 1 && v <= 10 ? v : 3;
+  } catch (e) { return 3; }
+}
 const QUIZ_OPEN_DOW = 2; // 1=월 2=화 … 화요일부터 일요일까지 열려요
 function rnd_(n) { let x = (n * 2654435761) % 4294967296; x = (x ^ (x >>> 15)) * 2246822519 % 4294967296; return (x ^ (x >>> 13)) >>> 0; }
 function weekOf_(v) {
@@ -106,7 +113,7 @@ function todayQuiz_(name) {
     seed = (seed * 1103515245 + 12345) % 2147483648;
     const j = seed % (i + 1); const t = order[i]; order[i] = order[j]; order[j] = t;
   }
-  return order.slice(0, Math.min(QUIZ_COUNT, b.length)).map(i => b[i]);
+  return order.slice(0, Math.min(quizCount_(), b.length)).map(i => b[i]);
 }
 function answerTab_() { return tab_('answers', ['날짜', '이름', '문제 행', '고른 답', '정답 여부', '시각']); }
 function quizState_(name) {
